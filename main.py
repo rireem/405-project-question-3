@@ -1,55 +1,51 @@
+import itertools
 import time
 
 
-def dp_shortest_path():
-    def tsp(mask, pos):
-        if mask == (1 << (n + 1)) - 1:
-            # all beepers visited, return to start
-            return distance(pos, 0)
-
-        if dp[mask][pos] != -1:
-            return dp[mask][pos]
-
-        min_cost = float('inf')
-        for next_pos in range(n + 1):
-            if mask & (1 << next_pos) == 0:  # If next_pos is not visited
-                cost = distance(pos, next_pos) + tsp(mask | (1 << next_pos), next_pos)
-                min_cost = min(min_cost, cost)
-
-        dp[mask][pos] = min_cost
-        return min_cost
-
-    def distance(a, b):
-        return abs(beepers[a][0] - beepers[b][0]) + abs(beepers[a][1] - beepers[b][1])
-
+def bf_shortest_path():
     scenarios = int(input("Enter number of scenarios: "))
     for _ in range(scenarios):
-        # grid size input
+
         x_size, y_size = map(int, input().split())
 
-        # karel start position
+        # starting position
         start_x, start_y = map(int, input().split())
 
         # no. of beepers
         n = int(input())
-        beepers = [(start_x, start_y)]  # Include starting position as beeper 0
+        beepers = []
         for _ in range(n):
             beepers.append(tuple(map(int, input().split())))
 
-        # initialize DP table
-        dp = [[-1] * (n + 1) for _ in range(1 << (n + 1))]
-
-        # solve using TSP
+        # brute force
         start_time = time.time()
-        result = tsp(1, 0)
-        # start from beeper 0
+        min_distance = float('inf')  # Start with a very large value
+
+        # iterate
+        for perm in itertools.permutations(beepers):
+            distance = 0
+            current_x, current_y = start_x, start_y
+
+            # calculate distance
+            for x, y in perm:
+                distance += abs(current_x - x) + abs(current_y - y)
+                current_x, current_y = x, y
+
+            # add dist to return to start
+            distance += abs(current_x - start_x) + abs(current_y - start_y)
+
+            # update min distance
+            min_distance = min(min_distance, distance)
+
         end_time = time.time()
 
-        print(f"The shortest path has length {result}")
+        # result
+        print(f"The shortest path has length {min_distance}")
         print(f"Execution time: {end_time - start_time:.6f} seconds")
 
 
-dp_shortest_path()
+bf_shortest_path()
+
 """
 use to test. result is 24.
 
@@ -72,4 +68,3 @@ use to test. result is 12
 3 3
 4 4
 """
-
